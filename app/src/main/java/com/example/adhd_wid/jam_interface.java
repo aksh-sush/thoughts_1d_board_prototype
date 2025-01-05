@@ -1,11 +1,15 @@
 package com.example.adhd_wid;
 
+import static com.google.android.flexbox.FlexboxLayout.*;
+
 import android.graphics.Color;
 import android.os.Bundle;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.flexbox.FlexDirection;
+import com.google.android.flexbox.FlexWrap;
 import com.google.android.flexbox.FlexboxLayout;
 
 import java.util.Random;
@@ -23,8 +27,11 @@ public class jam_interface extends AppCompatActivity {
         // Get reference to the FlexboxLayout
         FlexboxLayout flexboxLayout = findViewById(R.id.flexbox);
 
-        // Set the FlexboxLayout direction to COLUMN to arrange buttons vertically
-        flexboxLayout.setFlexDirection(com.google.android.flexbox.FlexDirection.COLUMN);
+        // Set the FlexboxLayout direction to ROW to arrange buttons in rows
+        flexboxLayout.setFlexDirection(FlexDirection.ROW);
+
+        // Enable wrapping after the 4th button
+        flexboxLayout.setFlexWrap(FlexWrap.WRAP);
 
         // Set an OnClickListener on the small button
         smallButton.setOnClickListener(v -> addNewButton(flexboxLayout));
@@ -44,10 +51,12 @@ public class jam_interface extends AppCompatActivity {
         newButton.measure(0, 0);
         int minTextWidth = newButton.getMeasuredWidth();
         int minTextHeight = newButton.getMeasuredHeight();
+        // Get the current layout dimensions
+        int layoutWidth = flexboxLayout.getWidth();
+        int layoutHeight = flexboxLayout.getHeight();
 
         // Set the minimum button size based on the text dimensions
         int minButtonSize = Math.max(minTextWidth, minTextHeight);
-
         // Define the maximum size (e.g., 2 times the minimum size)
         int maxButtonSize = minButtonSize * 2;
 
@@ -60,6 +69,7 @@ public class jam_interface extends AppCompatActivity {
                 buttonSize, // Set width
                 buttonSize  // Set height to ensure the button is square
         );
+
         params.setMargins(10, 10, 10, 10); // Optional margins for spacing
 
         // Apply layout parameters to the button
