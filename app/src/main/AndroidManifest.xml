@@ -14,7 +14,7 @@
 
         <!-- MainActivity Declaration -->
         <activity
-            android:name=".MainActivity"
+            android:name=".jam_interface"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,7 +24,7 @@
 
 
         <activity
-            android:name=".jam_interface"
+            android:name=".MainActivity"
         android:exported="true">
         </activity>
     </application>
