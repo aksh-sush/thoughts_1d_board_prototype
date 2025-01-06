@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
         // Start the intent to launch jam_interface class
-        Intent intent = new Intent(MainActivity.this, jam_interface.class);
+        Intent intent = new Intent(MainActivity.this,jam_interface.class);
         startActivity(intent);
     }
 }

@@ -1,11 +1,10 @@
 package com.example.adhd_wid;
 
-import static com.google.android.flexbox.FlexboxLayout.*;
-
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -17,109 +16,96 @@ import java.util.Random;
 
 public class jam_interface extends AppCompatActivity {
 
+    private FlexboxLayout flexboxLayout;
+    private boolean lastButtonAddedBelow = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.jam_board);
 
-        // Get reference to the small button
+        flexboxLayout = findViewById(R.id.flexbox);
+
+        // Set FlexboxLayout properties to ensure buttons align properly
+        flexboxLayout.setFlexDirection(FlexDirection.ROW);  // Align buttons in a row
+        flexboxLayout.setFlexWrap(FlexWrap.WRAP);  // Wrap buttons when space runs out
+
+        // Get the existing small button from XML
         Button smallButton = findViewById(R.id.button);
 
-        // Get reference to the FlexboxLayout
-        FlexboxLayout flexboxLayout = findViewById(R.id.flexbox);
-
-        // Set the FlexboxLayout direction to ROW to arrange buttons in rows
-        flexboxLayout.setFlexDirection(FlexDirection.ROW);
-
-        // Enable wrapping after the 4th button
-        flexboxLayout.setFlexWrap(FlexWrap.WRAP);
-
-        // Set an OnClickListener on the small button
-        smallButton.setOnClickListener(v -> addNewButton(flexboxLayout));
-
-        // Add a layout change listener to ensure all buttons remain square
-        flexboxLayout.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
-            adjustButtonSizes(flexboxLayout);
+        // Set an OnClickListener for the small button to add a new button
+        smallButton.setOnClickListener(v -> {
+            // Only add a new dynamic button when the small button is clicked
+            addDynamicButton();
         });
     }
 
-    private void addNewButton(FlexboxLayout flexboxLayout) {
-        // Create a new button
-        Button newButton = new Button(this);
-        newButton.setText("cue");
+    private void addDynamicButton() {
+        // Create a container (layer) for the button
+        LinearLayout container = new LinearLayout(this);
+        container.setOrientation(LinearLayout.VERTICAL);
+        container.setBackgroundColor(Color.GRAY);  // Set a background color for the layer (optional)
 
-        // Measure the button to calculate the minimum size based on the text
-        newButton.measure(0, 0);
+        // Create the new button inside the container
+        Button newButton = new Button(this);
+        newButton.setText("");  // Set button text to empty for a clean look
+        newButton.setBackgroundColor(Color.BLUE);  // Background color for the button
+        newButton.setTextColor(Color.TRANSPARENT);  // Remove text color
+        newButton.setPadding(0, 0, 0, 0);  // Remove padding for a clean button appearance
+
+        // Measure button size based on its content
+        newButton.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
         int minTextWidth = newButton.getMeasuredWidth();
         int minTextHeight = newButton.getMeasuredHeight();
 
-        // Get the current layout dimensions
+        // Get layout dimensions
         int layoutWidth = flexboxLayout.getWidth();
 
-        // Set the minimum button size based on the text dimensions
+        // Calculate minimum and maximum button sizes
         int minButtonSize = Math.max(minTextWidth, minTextHeight);
-        // Define the maximum size (e.g., 2 times the minimum size)
         int maxButtonSize = minButtonSize * 2;
 
-        // Calculate the total width of existing buttons
+        // Calculate the total width of existing buttons, including margins
         int totalWidth = 0;
         for (int i = 0; i < flexboxLayout.getChildCount(); i++) {
             View child = flexboxLayout.getChildAt(i);
             FlexboxLayout.LayoutParams childParams = (FlexboxLayout.LayoutParams) child.getLayoutParams();
-            int leftMargin = childParams.getMarginStart();
-            int rightMargin = childParams.getMarginEnd();
-            totalWidth += child.getWidth() + leftMargin + rightMargin;
+            totalWidth += child.getWidth() + childParams.getMarginStart() + childParams.getMarginEnd();
         }
 
-        // Calculate remaining space in the layout
+        // Remaining space in the layout
         int remainingSpace = layoutWidth - totalWidth;
 
-        // Adjust min and max button sizes based on remaining space
+        // Adjust button size based on remaining space
         if (remainingSpace > 0) {
-            minButtonSize = Math.min(minButtonSize, remainingSpace / 2); // Ensure min size does not exceed half of remaining space
-            maxButtonSize = Math.min(maxButtonSize, remainingSpace); // Ensure max size does not exceed remaining space
+            minButtonSize = Math.min(minButtonSize, remainingSpace / 2);
+            maxButtonSize = Math.min(maxButtonSize, remainingSpace);
+        } else {
+            return; // No space to add a button
         }
 
-        // Generate a random button size within the new min and max range
+        // Randomly set button size
         Random random = new Random();
         int buttonSize = random.nextInt(maxButtonSize - minButtonSize + 1) + minButtonSize;
 
-        // Create LayoutParams for the button
-        FlexboxLayout.LayoutParams params = new FlexboxLayout.LayoutParams(
-                buttonSize, // Set width
-                buttonSize  // Set height to ensure the button is square
-        );
-
-        params.setMargins(10, 10, 10, 10); // Optional margins for spacing
-
-        // Check if adding the new button would exceed the layout's width
-        if (totalWidth + buttonSize + params.leftMargin + params.rightMargin > layoutWidth) {
-            // If the new button exceeds the layout width, don't add it
-            return;
-        }
-
-        // Apply layout parameters to the button
+        // Set button size and margins
+        FlexboxLayout.LayoutParams params = new FlexboxLayout.LayoutParams(buttonSize, buttonSize);
+        params.setMargins(10, 10, 10, 10);
         newButton.setLayoutParams(params);
 
-        // Optionally, set a background color for the button
-        newButton.setBackgroundColor(Color.parseColor("#FF6200EE"));
+        // Add the new button to the container
+        container.addView(newButton);
 
-        // Add the button to the FlexboxLayout
-        flexboxLayout.addView(newButton);
-    }
-
-    private void adjustButtonSizes(FlexboxLayout flexboxLayout) {
-        // Iterate through all child views of the FlexboxLayout
-        for (int i = 0; i < flexboxLayout.getChildCount(); i++) {
-            Button button = (Button) flexboxLayout.getChildAt(i);
-
-            // Get the current height of the button
-            int buttonHeight = button.getHeight();
-
-            // Update the width to match the height to make it square
-            FlexboxLayout.LayoutParams params = (FlexboxLayout.LayoutParams) button.getLayoutParams();
-            params.width = buttonHeight; // Set width equal to height
-            button.setLayoutParams(params); // Apply updated params
+        // Add the container (with the button inside) to the FlexboxLayout
+        if (lastButtonAddedBelow) {
+            // Add the container to the left of the last button (this will add the new button next to the previous one)
+            flexboxLayout.addView(container, flexboxLayout.getChildCount() - 1);
+        } else {
+            // Add the container below the last button (this will add the new button below the previous one)
+            flexboxLayout.addView(container);
         }
+
+        // Toggle the position for the next button
+        lastButtonAddedBelow = !lastButtonAddedBelow;
     }
 }

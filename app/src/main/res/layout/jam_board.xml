@@ -23,26 +23,27 @@
 
     </com.google.android.flexbox.FlexboxLayout>
 
+
     <Button
         android:id="@+id/button"
         android:layout_width="31dp"
         android:layout_height="31dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="5dp"
-        android:layout_marginTop="14dp"
+        android:layout_marginStart="3dp"
+        android:layout_marginTop="9dp"
         android:background="@drawable/rectangle_txt"
         android:text="Button" />
 
     <TextView
         android:id="@+id/textView"
-        android:layout_width="353dp"
+        android:layout_width="240dp"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginStart="-36dp"
-        android:layout_marginTop="14dp"
-        android:layout_marginEnd="59dp"
+        android:layout_marginStart="76dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="60dp"
         android:layout_toEndOf="@+id/button"
         android:text="heading"
         android:textAlignment="center"
