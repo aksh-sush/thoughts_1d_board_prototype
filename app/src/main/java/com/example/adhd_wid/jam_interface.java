@@ -4,7 +4,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -17,7 +17,7 @@ import java.util.Random;
 public class jam_interface extends AppCompatActivity {
 
     private FlexboxLayout flexboxLayout;
-    private boolean lastButtonAddedBelow = false;
+    private boolean lastButtonAddedBelow = false;  // Track if the last button was added below or to the right
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,71 +41,70 @@ public class jam_interface extends AppCompatActivity {
     }
 
     private void addDynamicButton() {
-        // Create a container (layer) for the button
-        LinearLayout container = new LinearLayout(this);
-        container.setOrientation(LinearLayout.VERTICAL);
-        container.setBackgroundColor(Color.GRAY);  // Set a background color for the layer (optional)
-
-        // Create the new button inside the container
+        // Create the new button
         Button newButton = new Button(this);
         newButton.setText("");  // Set button text to empty for a clean look
         newButton.setBackgroundColor(Color.BLUE);  // Background color for the button
         newButton.setTextColor(Color.TRANSPARENT);  // Remove text color
         newButton.setPadding(0, 0, 0, 0);  // Remove padding for a clean button appearance
 
-        // Measure button size based on its content
-        newButton.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-        int minTextWidth = newButton.getMeasuredWidth();
-        int minTextHeight = newButton.getMeasuredHeight();
+        // Get the available width and height of the FlexboxLayout
+        int availableWidth = flexboxLayout.getWidth();
+        int availableHeight = flexboxLayout.getHeight();
 
-        // Get layout dimensions
-        int layoutWidth = flexboxLayout.getWidth();
+        // Determine the button size limits
+        int minButtonSize = 50;  // Set a minimum button size
+        int maxButtonSize = Math.min(availableWidth, availableHeight) / 2;  // Set a maximum button size
 
-        // Calculate minimum and maximum button sizes
-        int minButtonSize = Math.max(minTextWidth, minTextHeight);
-        int maxButtonSize = minButtonSize * 2;
-
-        // Calculate the total width of existing buttons, including margins
-        int totalWidth = 0;
-        for (int i = 0; i < flexboxLayout.getChildCount(); i++) {
-            View child = flexboxLayout.getChildAt(i);
-            FlexboxLayout.LayoutParams childParams = (FlexboxLayout.LayoutParams) child.getLayoutParams();
-            totalWidth += child.getWidth() + childParams.getMarginStart() + childParams.getMarginEnd();
-        }
-
-        // Remaining space in the layout
-        int remainingSpace = layoutWidth - totalWidth;
-
-        // Adjust button size based on remaining space
-        if (remainingSpace > 0) {
-            minButtonSize = Math.min(minButtonSize, remainingSpace / 2);
-            maxButtonSize = Math.min(maxButtonSize, remainingSpace);
-        } else {
-            return; // No space to add a button
-        }
-
-        // Randomly set button size
+        // Randomly set button size within the available space
         Random random = new Random();
-        int buttonSize = random.nextInt(maxButtonSize - minButtonSize + 1) + minButtonSize;
+        int finalButtonSize = random.nextInt(maxButtonSize - minButtonSize + 1) + minButtonSize;
+
+        // Check if the new button will fit within the available space
+        if (!willFit(finalButtonSize, finalButtonSize, availableWidth, availableHeight)) {
+            // Show overflow message if the button won't fit
+            Toast.makeText(this, "Overflow: Not enough space", Toast.LENGTH_SHORT).show();
+            return;  // Don't add the button if there is not enough space
+        }
 
         // Set button size and margins
-        FlexboxLayout.LayoutParams params = new FlexboxLayout.LayoutParams(buttonSize, buttonSize);
+        FlexboxLayout.LayoutParams params = new FlexboxLayout.LayoutParams(finalButtonSize, finalButtonSize);
         params.setMargins(10, 10, 10, 10);
         newButton.setLayoutParams(params);
 
-        // Add the new button to the container
-        container.addView(newButton);
-
-        // Add the container (with the button inside) to the FlexboxLayout
+        // Add the new button to the layout
         if (lastButtonAddedBelow) {
-            // Add the container to the left of the last button (this will add the new button next to the previous one)
-            flexboxLayout.addView(container, flexboxLayout.getChildCount() - 1);
+            // Add the button to the right of the last button
+            flexboxLayout.addView(newButton);
         } else {
-            // Add the container below the last button (this will add the new button below the previous one)
-            flexboxLayout.addView(container);
+            // Add the button below the last button
+            flexboxLayout.addView(newButton);
         }
 
         // Toggle the position for the next button
         lastButtonAddedBelow = !lastButtonAddedBelow;
+    }
+
+    // Helper method to check if the new button will fit within the available space
+    private boolean willFit(int buttonWidth, int buttonHeight, int availableWidth, int availableHeight) {
+        int totalWidth = 0;
+        int totalHeight = 0;
+
+        // Calculate total width and height of existing views in the layout
+        for (int i = 0; i < flexboxLayout.getChildCount(); i++) {
+            View child = flexboxLayout.getChildAt(i);
+            FlexboxLayout.LayoutParams childParams = (FlexboxLayout.LayoutParams) child.getLayoutParams();
+            totalWidth += child.getWidth() + childParams.getMarginStart() + childParams.getMarginEnd();
+            totalHeight += child.getHeight() + childParams.topMargin + childParams.bottomMargin;
+        }
+
+        // Check if adding the new button will overflow the layout
+        if (lastButtonAddedBelow) {
+            // Check space to the right
+            return totalWidth + buttonWidth <= availableWidth;
+        } else {
+            // Check space below
+            return totalHeight + buttonHeight <= availableHeight;
+        }
     }
 }
