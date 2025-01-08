@@ -1,12 +1,22 @@
 package com.example.adhd_wid;
 
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.Manifest;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.flexbox.FlexboxLayout;
 import com.google.android.flexbox.FlexWrap;
@@ -18,12 +28,14 @@ public class jam_interface extends AppCompatActivity {
     private FlexboxLayout flexboxLayout;
     private int buttonCount = 0; // Track the number of buttons added
 
+    private static final int PICK_IMAGE_REQUEST = 1; // Request code for picking an image
+    private ImageView currentImageView; // Reference to the currently clicked ImageView
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.jam_board);
 
-        // Get reference to the small button
         Button smallButton = findViewById(R.id.button);
 
         // Get reference to the FlexboxLayout
@@ -33,8 +45,38 @@ public class jam_interface extends AppCompatActivity {
         flexboxLayout.setFlexWrap(FlexWrap.WRAP); // Wrap buttons when space runs out
 
         // Set OnClickListener for the small button to add new buttons
-        smallButton.setOnClickListener(v -> addDynamicButton());
+        smallButton.setOnClickListener(v -> showPopup());
     }
+
+    private void showPopup() {
+        // Show dialog to choose between adding a button or an image
+        new AlertDialog.Builder(this)
+                .setTitle("Choose Action")
+                .setMessage("Do you want to add a Button or an Image?")
+                .setPositiveButton("Button", (dialog, which) -> addDynamicButton())
+                .setNegativeButton("Image", (dialog, which) -> openGallery())
+                .show();
+    }
+    private void openGallery() {
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*"); // Set the type to image
+        startActivityForResult(intent, PICK_IMAGE_REQUEST); // Start the gallery activity
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null) {
+            Uri imageUri = data.getData(); // Get the image URI
+            // You can now use the imageUri to display the image or do something else
+            // For example, you can set it to an ImageView if you have one
+            //imageView.setImageURI(imageUri);
+        }
+    }
+
+
+
+
+
 
     private void addDynamicButton() {
         // Create a new RelativeLayout to hold the button
@@ -58,7 +100,7 @@ public class jam_interface extends AppCompatActivity {
 
         // Randomize button size within the range
         Random random = new Random();
-        int buttonSize = random.nextInt(maxButtonSize - minButtonSize + 1) + minButtonSize;
+        int buttonSize = random.nextInt(maxButtonSize - minButtonSize +  1) + minButtonSize;
 
         // Set LayoutParams for the button
         RelativeLayout.LayoutParams buttonParams = new RelativeLayout.LayoutParams(buttonSize, buttonSize);
@@ -96,10 +138,10 @@ public class jam_interface extends AppCompatActivity {
             // Increment the counter for this button
             int currentCount = (int) (newButton.getTag() == null ? 0 : newButton.getTag());
             currentCount++;
-            newButton.setTag(currentCount ); // Store the updated count as a tag
+            newButton.setTag(currentCount); // Store the updated count as a tag
 
             // Calculate the new scale factor
-            float scaleFactor = 1 + (currentCount * 0.1f); // Scale by 10% for each tap
+            float scaleFactor = 1 + (currentCount * 0.05f); // Scale by 5% for each tap
 
             // Apply the scaling transformation to the button
             newButton.setScaleX(scaleFactor);

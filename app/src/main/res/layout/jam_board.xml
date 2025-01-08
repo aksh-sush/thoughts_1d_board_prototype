@@ -4,6 +4,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_gravity="center"
+        android:adjustViewBounds="true"
+        android:contentDescription="Selected Image" />
 
     <com.google.android.flexbox.FlexboxLayout
         android:id="@+id/flexbox"
