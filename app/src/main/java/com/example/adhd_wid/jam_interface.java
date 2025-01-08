@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.Manifest;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -67,10 +68,24 @@ public class jam_interface extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null) {
             Uri imageUri = data.getData(); // Get the image URI
-            // You can now use the imageUri to display the image or do something else
-            // For example, you can set it to an ImageView if you have one
-            //imageView.setImageURI(imageUri);
+            if (imageUri != null) {
+                addImageToFlexbox(imageUri); // Add the selected image to the FlexboxLayout
+            }
         }
+    }
+    private void addImageToFlexbox(Uri imageUri) {
+        // Create a new ImageView dynamically
+        ImageView imageView = new ImageView(this);
+        imageView.setLayoutParams(new FlexboxLayout.LayoutParams(200, 200)); // Set size (e.g., 200x200)
+        imageView.setImageURI(imageUri); // Set the selected image
+
+        // Add the ImageView to the FlexboxLayout
+        flexboxLayout.addView(imageView);
+
+        // Optional: Add a click listener for further actions on the image
+        imageView.setOnClickListener(v -> {
+            Toast.makeText(this, "Image clicked!", Toast.LENGTH_SHORT).show();
+        });
     }
 
 
