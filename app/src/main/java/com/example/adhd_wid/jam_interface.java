@@ -74,19 +74,70 @@ public class jam_interface extends AppCompatActivity {
         }
     }
     private void addImageToFlexbox(Uri imageUri) {
-        // Create a new ImageView dynamically
-        ImageView imageView = new ImageView(this);
-        imageView.setLayoutParams(new FlexboxLayout.LayoutParams(200, 200)); // Set size (e.g., 200x200)
-        imageView.setImageURI(imageUri); // Set the selected image
+        // Create a new RelativeLayout to hold the image
+        RelativeLayout imageLayout = new RelativeLayout(this);
+        imageLayout.setBackgroundColor(Color.DKGRAY); // Set dark grey background
 
-        // Add the ImageView to the FlexboxLayout
-        flexboxLayout.addView(imageView);
+        // Create a new ImageView
+        ImageView newImageView = new ImageView(this);
+        newImageView.setImageURI(imageUri); // Set the selected image
+        newImageView.setScaleType(ImageView.ScaleType.CENTER_CROP); // Crop and center the image
 
-        // Optional: Add a click listener for further actions on the image
-        imageView.setOnClickListener(v -> {
-            Toast.makeText(this, "Image clicked!", Toast.LENGTH_SHORT).show();
+        // Set a unique ID for the ImageView
+        newImageView.setId(View.generateViewId());
+
+        // Measure image size (similar logic to button sizing)
+        Random random = new Random();
+        int minButtonSize = 150; // Minimum size for the button (adjustable)
+        int maxButtonSize = minButtonSize * 4;
+        int imageSize = random.nextInt(maxButtonSize - minButtonSize + 1) + minButtonSize;
+
+        // Set LayoutParams for the ImageView
+        RelativeLayout.LayoutParams imageParams = new RelativeLayout.LayoutParams(imageSize, imageSize);
+        imageParams.setMargins(10, 10, 10, 10); // Add margins for spacing
+        newImageView.setLayoutParams(imageParams);
+
+        // Add the ImageView to the RelativeLayout
+        imageLayout.addView(newImageView);
+
+        // Set LayoutParams for the RelativeLayout
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+
+        // Positioning logic (similar to buttons)
+        if (buttonCount == 0) {
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        } else if (buttonCount % 2 == 0) {
+            layoutParams.addRule(RelativeLayout.RIGHT_OF, flexboxLayout.getChildAt(buttonCount - 1).getId());
+        } else {
+            layoutParams.addRule(RelativeLayout.BELOW, flexboxLayout.getChildAt(buttonCount - 1).getId());
+        }
+
+        // Set the layout parameters for the image layout
+        imageLayout.setLayoutParams(layoutParams);
+
+        // Add the RelativeLayout (containing the ImageView) to the FlexboxLayout
+        flexboxLayout.addView(imageLayout);
+
+        // Set OnClickListener for the new ImageView to handle scaling
+        newImageView.setOnClickListener(v -> {
+            // Increment the counter for this ImageView
+            int currentCount = (int) (newImageView.getTag() == null ? 0 : newImageView.getTag());
+            currentCount++;
+            newImageView.setTag(currentCount); // Store the updated count as a tag
+
+            // Calculate the new scale factor
+            float scaleFactor = 1 + (currentCount * 0.05f); // Scale by 5% for each tap
+
+            // Apply the scaling transformation to the ImageView
+            newImageView.setScaleX(scaleFactor);
+            newImageView.setScaleY(scaleFactor);
         });
+
+        buttonCount++;
     }
+
 
 
 
