@@ -26,6 +26,9 @@ import java.util.Random;
 
 public class jam_interface extends AppCompatActivity {
 
+
+    private static final int CAMERA_PERMISSION_REQUEST_CODE = 1;
+    private static final int REQUEST_IMAGE_CAPTURE = 1;
     private FlexboxLayout flexboxLayout;
     private int buttonCount = 0; // Track the number of buttons added
 
@@ -38,6 +41,8 @@ public class jam_interface extends AppCompatActivity {
         setContentView(R.layout.jam_board);
 
         Button smallButton = findViewById(R.id.button);
+        Button cambutton = findViewById(R.id.cam);
+
 
         // Get reference to the FlexboxLayout
         flexboxLayout = findViewById(R.id.flexbox);
@@ -47,6 +52,7 @@ public class jam_interface extends AppCompatActivity {
 
         // Set OnClickListener for the small button to add new buttons
         smallButton.setOnClickListener(v -> showPopup());
+        cambutton.setOnClickListener(v->checkCameraPermission());
     }
 
     private void showPopup() {
@@ -58,6 +64,45 @@ public class jam_interface extends AppCompatActivity {
                 .setNegativeButton("Image", (dialog, which) -> openGallery())
                 .show();
     }
+    private void checkCameraPermission() {
+        // Check if the camera permission is granted
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            // If not, request the permission
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA},
+                    CAMERA_PERMISSION_REQUEST_CODE);
+        } else {
+            // Permission already granted, launch the camera
+            cameralaunch();
+        }
+    }
+    private void cameralaunch() {
+        // Create an Intent to open the camera
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        // Check if a camera app is available
+        if (cameraIntent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE);
+        } else {
+            Toast.makeText(this, "No camera app available", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted, launch the camera
+                cameralaunch();
+            } else {
+                // Permission denied, show a message to the user
+                Toast.makeText(this, "Camera permission is required to use the camera", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
     private void openGallery() {
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*"); // Set the type to image
