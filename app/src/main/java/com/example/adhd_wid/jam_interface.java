@@ -3,6 +3,7 @@ package com.example.adhd_wid;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -108,15 +109,90 @@ public class jam_interface extends AppCompatActivity {
         intent.setType("image/*"); // Set the type to image
         startActivityForResult(intent, PICK_IMAGE_REQUEST); // Start the gallery activity
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null) {
-            Uri imageUri = data.getData(); // Get the image URI
+            // Handle image selection from the gallery
+            Uri imageUri = data.getData();
             if (imageUri != null) {
-                addImageToFlexbox(imageUri); // Add the selected image to the FlexboxLayout
+                addImageToFlexbox(imageUri);
+            }
+        } else if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK && data != null) {
+            // Handle the captured image from the camera
+            Bundle extras = data.getExtras();
+            if (extras != null) {
+                Bitmap capturedImage = (Bitmap) extras.get("data");
+                if (capturedImage != null) {
+                    addCapturedImageToFlexbox(capturedImage);
+                }
             }
         }
+    }
+    private void addCapturedImageToFlexbox(Bitmap capturedImage) {
+        // Create a new RelativeLayout to hold the image
+        RelativeLayout imageLayout = new RelativeLayout(this);
+        imageLayout.setBackgroundColor(Color.DKGRAY); // Set dark grey background
+
+        // Create a new ImageView
+        ImageView newImageView = new ImageView(this);
+        newImageView.setImageBitmap(capturedImage); // Set the captured image
+        newImageView.setScaleType(ImageView.ScaleType.CENTER_CROP); // Crop and center the image
+
+        // Set a unique ID for the ImageView
+        newImageView.setId(View.generateViewId());
+
+        // Measure image size
+        Random random = new Random();
+        int minImageSize = 150; // Minimum size for the image
+        int maxImageSize = minImageSize * 4;
+        int imageSize = random.nextInt(maxImageSize - minImageSize + 1) + minImageSize;
+
+        // Set LayoutParams for the ImageView
+        RelativeLayout.LayoutParams imageParams = new RelativeLayout.LayoutParams(imageSize, imageSize);
+        imageParams.setMargins(10, 10, 10, 10); // Add margins for spacing
+        newImageView.setLayoutParams(imageParams);
+
+        // Add the ImageView to the RelativeLayout
+        imageLayout.addView(newImageView);
+
+        // Set LayoutParams for the RelativeLayout
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+
+        // Positioning logic (similar to buttons)
+        if (buttonCount == 0) {
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        } else if (buttonCount % 2 == 0) {
+            layoutParams.addRule(RelativeLayout.RIGHT_OF, flexboxLayout.getChildAt(buttonCount - 1).getId());
+        } else {
+            layoutParams.addRule(RelativeLayout.BELOW, flexboxLayout.getChildAt(buttonCount - 1).getId());
+        }
+
+        // Set the layout parameters for the image layout
+        imageLayout.setLayoutParams(layoutParams);
+
+        // Add the RelativeLayout (containing the ImageView) to the FlexboxLayout
+        flexboxLayout.addView(imageLayout);
+
+        // Set OnClickListener for the new ImageView to handle scaling
+        newImageView.setOnClickListener(v -> {
+            int currentCount = (int) (newImageView.getTag() == null ? 0 : newImageView.getTag());
+            currentCount++;
+            newImageView.setTag(currentCount); // Store the updated count as a tag
+
+            // Calculate the new scale factor
+            float scaleFactor = 1 + (currentCount * 0.05f); // Scale by 5% for each tap
+
+            // Apply the scaling transformation to the ImageView
+            newImageView.setScaleX(scaleFactor);
+            newImageView.setScaleY(scaleFactor);
+        });
+
+        buttonCount++;
     }
     private void addImageToFlexbox(Uri imageUri) {
         // Create a new RelativeLayout to hold the image
